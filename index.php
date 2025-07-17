@@ -45,7 +45,7 @@
                 </div>
             </form>
             <div class="text-center mt-3">
-                <small>Não tem conta? <a href="#" class="text-pink">Cadastre-se</a></small>
+                <small>Não tem conta? <a href="cadastrar.php" class="text-pink">Cadastre-se</a></small>
             </div>
         </div>
     </div>
