@@ -1,3 +1,10 @@
+<?php
+  session_start();
+  if (!isset($_SESSION['logado'])) {
+      header("Location: index.php");
+      exit();
+  }
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -25,7 +32,7 @@
       border-radius: 20px;
       color: white;
       padding: 20px;
-      background: linear-gradient(135deg, #e83e8c, #f78db4);
+      border: solid 2px #000;
     }
     .section-title {
       font-weight: 600;
@@ -47,9 +54,9 @@
       </a>
       <div class="d-flex">
         <span class="navbar-text text-white me-3">
-          Olá, <strong>Usuário</strong>
+          Olá, <strong><?php echo $_SESSION['usuario_nome']; ?></strong>
         </span>
-        <a href="#" class="btn btn-outline-light btn-sm">Sair</a>
+        <a href="logout.php" class="btn btn-outline-light btn-sm">Sair</a>
       </div>
     </div>
   </nav>
@@ -59,20 +66,24 @@
     <!-- Cartões -->
     <h3 class="section-title">Meus Cartões</h3>
     <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card card-credit">
-          <h5 class="mb-1">Cartão Crédito Nubank</h5>
-          <small>Fechamento: 10 / Vencimento: 20</small>
-          <p class="mt-2">Limite disponível: <strong>R$ 1.200,00</strong></p>
+      <?php foreach ($_SESSION['cartoes']['credito'] as $cartaoCredito): ?>
+        <div class="col-md-6">
+          <div class="card card-credit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoCredito['cor_cartao']); ?>, #f78db4);">
+            <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
+            <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
+            <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
+          </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card card-debit">
-          <h5 class="mb-1">Cartão Débito Inter</h5>
-          <small>Saldo disponível:</small>
-          <p class="mt-2"><strong>R$ 2.450,00</strong></p>
-        </div>
-      </div>
+      <?php endforeach; ?>
+        <?php foreach ($_SESSION['cartoes']['debito'] as $cartaoDebito): ?>
+            <div class="col-md-6">
+            <div class="card card-debit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoDebito['cor_cartao']); ?>, #f78db4);">
+                <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
+                <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
+            </div>
+            </div>
+      <?php endforeach; ?>
+      <span><a class='btn btn-outline-danger' href="newCard.php">Cadastrar Cartão</a></span>
     </div>
 
     <!-- Contas -->
