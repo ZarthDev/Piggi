@@ -72,6 +72,9 @@
             <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
             <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
             <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
+            <button type="button" class="btn btn-outline-light ver-detalhes" data-bs-toggle="modal" data-bs-target="#detalhesModal" id="detalhes-credito-<?php echo $cartaoCredito['id']; ?>">
+                Ver Detalhes
+            </button>
           </div>
         </div>
       <?php endforeach; ?>
@@ -80,6 +83,9 @@
             <div class="card card-debit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoDebito['cor_cartao']); ?>, #f78db4);">
                 <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
                 <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
+                <button type="button" class="btn btn-outline-light ver-detalhes" data-bs-toggle="modal" data-bs-target="#detalhesModal" id="detalhes-debito-<?php echo $cartaoDebito['id']; ?>">
+                    Ver Detalhes
+                </button>
             </div>
             </div>
       <?php endforeach; ?>
@@ -136,7 +142,48 @@
 
   </div>
 
+  <script>
+    document.querySelectorAll('.ver-detalhes').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const idCompleto = this.id; // exemplo: detalhes-credito-3
+        const partes = idCompleto.split('-'); // ['detalhes', 'credito', '3']
+        const tipo = partes[1]; // credito ou debito
+        const idCartao = partes[2];
+
+        console.log('Tipo:', tipo);
+        console.log('ID do Cartão:', idCartao);
+
+        // Exemplo: preencher dinamicamente o modal
+        const tituloModal = document.getElementById('modalTitulo');
+        tituloModal.textContent = `Cartão ${tipo.toUpperCase()} #${idCartao}`;
+
+        const corpoModal = document.getElementById('modalBody');
+        corpoModal.innerHTML = `Exibir informações do cartão <strong>${tipo}</strong> com ID <strong>${idCartao}</strong>.`;
+
+      });
+    });
+  </script>
+
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<div class="modal fade" id="detalhesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="modalTitulo">Detalhes</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-danger">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
