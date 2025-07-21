@@ -1,8 +1,8 @@
 <?php
   session_start();
   if (!isset($_SESSION['logado'])) {
-      header("Location: index.php");
-      exit();
+    header("Location: index.php");
+    exit();
   }
 ?>
 <!DOCTYPE html>
@@ -62,44 +62,83 @@
   </nav>
 
   <div class="container py-4">
-
-    <!-- Cartões -->
     <h3 class="section-title">Meus Cartões</h3>
     <div class="row g-4">
-      <?php foreach ($_SESSION['cartoes']['credito'] as $cartaoCredito): ?>
-        <div class="col-md-6">
-          <div class="card card-credit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoCredito['cor_cartao']); ?>, #f78db4);">
-            <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
-            <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
-            <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
-            <button type="button" class="btn btn-outline-light ver-detalhes" data-bs-toggle="modal" data-bs-target="#detalhesModal" id="detalhes-credito-<?php echo $cartaoCredito['id']; ?>">
-                Ver Detalhes
-            </button>
+      <?php 
+        $servidor = "localhost";
+        $usuario = "root";
+        $senha = "";
+        $banco = "Piggi";
+
+        try {
+          $conn = new PDO("mysql:host=$servidor;dbname=$banco;charset=utf8", $usuario, $senha);
+          $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+          $queryDebito = "SELECT * FROM cartoes_debito WHERE id_user = :id_user";
+          $queryCredito = "SELECT * FROM cartoes_credito WHERE id_user = :id_user";
+          $stmtDebito = $conn->prepare($queryDebito);
+          $stmtCredito = $conn->prepare($queryCredito);
+
+          $stmtDebito->bindParam(':id_user', $_SESSION['usuario_id']);
+          $stmtCredito->bindParam(':id_user', $_SESSION['usuario_id']);
+          $stmtDebito->execute();
+          $stmtCredito->execute();
+
+          $_SESSION['cartoes'] = [
+            'debito' => $stmtDebito->fetchAll(PDO::FETCH_ASSOC),
+            'credito' => $stmtCredito->fetchAll(PDO::FETCH_ASSOC)
+          ];
+        } catch (PDOException $e) {
+          echo "Erro: " . $e->getMessage();
+        }
+
+        foreach ($_SESSION['cartoes']['credito'] as $cartaoCredito): ?>
+          <div class="col-md-6">
+            <div class="card card-credit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoCredito['cor_cartao']); ?>, #f78db4);">
+              <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
+              <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
+              <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
+              <form method="POST" action="cardDetails.php">
+                <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoCredito['id']); ?>@credito">
+                <button class="btn btn-outline-light">Ver Detalhes</button>
+              </form>
+            </div>
           </div>
-        </div>
-      <?php endforeach; ?>
+        <?php endforeach; ?>
+
         <?php foreach ($_SESSION['cartoes']['debito'] as $cartaoDebito): ?>
-            <div class="col-md-6">
+          <div class="col-md-6">
             <div class="card card-debit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoDebito['cor_cartao']); ?>, #f78db4);">
-                <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
-                <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
-                <button type="button" class="btn btn-outline-light ver-detalhes" data-bs-toggle="modal" data-bs-target="#detalhesModal" id="detalhes-debito-<?php echo $cartaoDebito['id']; ?>">
-                    Ver Detalhes
-                </button>
+              <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
+              <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
+              <form method="POST" action="cardDetails.php">
+                <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoDebito['id']); ?>@debito">
+                <button href="#" class="btn btn-outline-light">Ver Detalhes</button>
+              </form>
             </div>
-            </div>
-      <?php endforeach; ?>
-      <span><a class='btn btn-outline-danger' href="newCard.php">Cadastrar Cartão</a></span>
+          </div>
+        <?php endforeach; ?>
+        <span><a class='btn btn-outline-danger' href="newCard.php">Cadastrar Cartão</a></span>
     </div>
 
     <!-- Contas -->
     <h3 class="section-title">Minhas Contas</h3>
     <div class="card mb-3">
-      <div class="card-body">
-        <h5>Conta Banco do Brasil</h5>
-        <p>Saldo: <strong class="text-success">R$ 4.780,00</strong></p>
-        <a href="#" class="btn btn-sm btn-outline-pink">+ Nova Transação</a>
-      </div>
+      <?php
+        if (isset($_SESSION['cartoes']['debito']) && count($_SESSION['cartoes']['debito']) > 0) {
+          foreach ($_SESSION['cartoes']['debito'] as $cartaoDebito): ?>
+            <div class="card-body">
+              <h5><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
+              <p>Saldo: <strong class="text-success">R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
+              <a href="#" class="btn btn-sm btn-outline-pink">+ Nova Transação</a>
+            </div>
+            <hr>
+          <?php endforeach;
+        } else { ?>
+          <div class="card-body">
+            <p>Nenhuma conta cadastrada.</p>
+          </div>
+      <?php } ?>
     </div>
 
     <!-- Metas -->
@@ -139,51 +178,9 @@
         </div>
       </div>
     </div>
-
   </div>
-
-  <script>
-    document.querySelectorAll('.ver-detalhes').forEach(btn => {
-      btn.addEventListener('click', function () {
-        const idCompleto = this.id; // exemplo: detalhes-credito-3
-        const partes = idCompleto.split('-'); // ['detalhes', 'credito', '3']
-        const tipo = partes[1]; // credito ou debito
-        const idCartao = partes[2];
-
-        console.log('Tipo:', tipo);
-        console.log('ID do Cartão:', idCartao);
-
-        // Exemplo: preencher dinamicamente o modal
-        const tituloModal = document.getElementById('modalTitulo');
-        tituloModal.textContent = `Cartão ${tipo.toUpperCase()} #${idCartao}`;
-
-        const corpoModal = document.getElementById('modalBody');
-        corpoModal.innerHTML = `Exibir informações do cartão <strong>${tipo}</strong> com ID <strong>${idCartao}</strong>.`;
-
-      });
-    });
-  </script>
-
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-<div class="modal fade" id="detalhesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="modalTitulo">Detalhes</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="modalBody">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
-        <button type="button" class="btn btn-danger">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
