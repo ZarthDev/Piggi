@@ -139,15 +139,21 @@
             <div class="card-body">
               <h5><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
               <p>Saldo: <strong class="text-success">R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
-              <a href="#" class="btn btn-sm btn-outline-pink">+ Nova Transação</a>
+              <form action="newTransaction.php" method="post">
+                <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoDebito['id']); ?>">
+                <button type='submit' class="btn btn-sm btn-outline-pink">+ Nova Transação</button>
+              </form>
             </div>
             <hr>
-          <?php endforeach;
+            <?php endforeach;
         } else { ?>
           <div class="card-body">
             <p>Nenhuma conta cadastrada.</p>
           </div>
-      <?php } ?>
+          <?php } ?>
+          <div class="card-footer text-start">
+            <a class='btn btn-outline-danger' href="transactionHistory.php">Ver Histórico</a>
+          </div>
     </div>
 
     <!-- Metas -->
