@@ -32,7 +32,7 @@
       border-radius: 20px;
       color: white;
       padding: 20px;
-      border: solid 2px #000;
+      border: solid 2px #695860ff;
     }
     .section-title {
       font-weight: 600;
@@ -88,6 +88,13 @@
             'debito' => $stmtDebito->fetchAll(PDO::FETCH_ASSOC),
             'credito' => $stmtCredito->fetchAll(PDO::FETCH_ASSOC)
           ];
+
+          $queryMetas = "SELECT * FROM tb_metas WHERE id_user = :id_user";
+          $stmtMetas = $conn->prepare($queryMetas);
+          $stmtMetas->bindParam(':id_user', $_SESSION['usuario_id']);
+          $stmtMetas->execute();
+          $_SESSION['metas'] = $stmtMetas->fetchAll(PDO::FETCH_ASSOC);
+
         } catch (PDOException $e) {
           echo "Erro: " . $e->getMessage();
         }
@@ -96,6 +103,7 @@
           <div class="col-md-6">
             <div class="card card-credit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoCredito['cor_cartao']); ?>, #f78db4);">
               <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
+              <p class="mb-0">Banco: <strong><?php echo htmlspecialchars($cartaoCredito['banco']); ?></strong></p>
               <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
               <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
               <form method="POST" action="cardDetails.php">
@@ -110,6 +118,7 @@
           <div class="col-md-6">
             <div class="card card-debit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoDebito['cor_cartao']); ?>, #f78db4);">
               <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
+              <p class="mb-0">Banco: <strong><?php echo htmlspecialchars($cartaoDebito['banco']); ?></strong></p>
               <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
               <form method="POST" action="cardDetails.php">
                 <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoDebito['id']); ?>@debito">
@@ -144,39 +153,27 @@
     <!-- Metas -->
     <h3 class="section-title">Metas Financeiras</h3>
     <div class="row">
-      <div class="col-md-4">
-        <div class="card card-objective">
-          <div class="card-body">
-            <h6>Saúde</h6>
-            <p>R$ 500 / R$ 1.000</p>
-            <div class="progress">
-              <div class="progress-bar bg-pink" style="width: 50%"></div>
+      <?php if (empty($_SESSION['metas'])) { ?>
+        <div class="col-12">
+          <div class="alert alert-danger" role="alert">
+            Você ainda não cadastrou nenhuma meta. <a href="newMeta.php" class="alert-link">Clique aqui para cadastrar uma nova meta.</a>
+          </div>
+        </div>
+      <?php } else { ?>
+        <?php foreach ($_SESSION['metas'] as $meta): ?>
+        <div class="col-md-4">
+          <div class="card card-objective">
+            <div class="card-body">
+              <h6><?php echo htmlspecialchars($meta['nome_meta']); ?></h6>
+              <p>R$ <?php echo number_format($meta['valor_atual'], 2, ',', '.'); ?> / R$ <?php echo number_format($meta['valor_desejado'], 2, ',', '.'); ?></p>
+              <div class="progress">
+                <div class="progress-bar bg-pink" style="width: <?php echo ($meta['valor_atual'] / $meta['valor_desejado']) * 100; ?>%"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card card-objective">
-          <div class="card-body">
-            <h6>Social</h6>
-            <p>R$ 300 / R$ 600</p>
-            <div class="progress">
-              <div class="progress-bar bg-pink" style="width: 50%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card card-objective">
-          <div class="card-body">
-            <h6>Investimento</h6>
-            <p>R$ 1.000 / R$ 2.000</p>
-            <div class="progress">
-              <div class="progress-bar bg-pink" style="width: 50%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <?php endforeach; } ?>
+      <span><a class='btn btn-outline-danger' href="newMeta.php">Cadastrar Meta</a></span>
     </div>
   </div>
 
