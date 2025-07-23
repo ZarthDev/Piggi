@@ -9,16 +9,18 @@
     $conn = new PDO("mysql:host=localhost;dbname=Piggi;charset=utf8", "root", "");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $conn->prepare("SELECT valor, destinatario, id_cartao FROM tb_transacoes WHERE id_user = :id_user ORDER BY id_transacao DESC");
+    $stmt = $conn->prepare("
+      SELECT t.valor, t.destinatario, 
+             COALESCE(cd.nome_cartao, cc.nome_cartao) AS nome_cartao
+      FROM tb_transacoes t
+      LEFT JOIN cartoes_debito cd ON t.id_cartao = cd.id
+      LEFT JOIN cartoes_credito cc ON t.id_cartao = cc.id
+      WHERE t.id_user = :id_user
+      ORDER BY t.id_transacao DESC
+    ");
     $stmt->bindParam(':id_user', $_SESSION['usuario_id']);
     $stmt->execute();
     $transacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $queryNomeCartao = "SELECT nome_cartao FROM cartoes_debito WHERE id_user = :id_user";
-    $stmtNomeCartao = $conn->prepare($queryNomeCartao);
-    $stmtNomeCartao->bindParam(':id_user', $_SESSION['usuario_id']);
-    $stmtNomeCartao->execute();
-    $nomesCartao = $stmtNomeCartao->fetchAll(PDO::FETCH_ASSOC);
 
   } catch (PDOException $e) {
     echo "Erro: " . $e->getMessage();
@@ -84,7 +86,7 @@
               <tr>
                 <td>R$ <?= number_format($t['valor'], 2, ',', '.') ?></td>
                 <td><?= htmlspecialchars($t['destinatario']) ?></td>
-                <td><?= htmlspecialchars($t['id_cartao']) ?></td>
+                <td><?= htmlspecialchars($t['nome_cartao'] ?? 'Desconhecido') ?></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
@@ -95,6 +97,7 @@
     <?php endif; ?>
 
     <a href="home.php" class="btn btn-voltar mt-3">← Voltar para o início</a>
+    <a href="deleteHistory.php" class="btn btn-voltar mt-3">← Limpar Histórico</a>
   </div>
 </div>
 

@@ -103,7 +103,10 @@
           <div class="col-md-6">
             <div class="card card-credit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoCredito['cor_cartao']); ?>, #f78db4);">
               <h5 class="mb-1"><?php echo htmlspecialchars($cartaoCredito['nome_cartao']); ?></h5>
-              <p class="mb-0">Banco: <strong><?php echo htmlspecialchars($cartaoCredito['banco']); ?></strong></p>
+              <p class="mb-0">
+                Banco: <strong><?php echo htmlspecialchars($cartaoCredito['banco']); ?></strong>
+                <img class='bancoImage @<?php echo htmlspecialchars($cartaoCredito['banco']); ?>'></img>
+              </p>
               <small>Fechamento: <?php echo htmlspecialchars($cartaoCredito['data_fechamento']); ?> / Vencimento: <?php echo htmlspecialchars($cartaoCredito['data_vencimento']); ?></small>
               <p class="mt-2">Limite disponível: <strong>R$ <?php echo number_format($cartaoCredito['limite_disponivel'], 2, ',', '.'); ?></strong></p>
               <form method="POST" action="cardDetails.php">
@@ -118,7 +121,10 @@
           <div class="col-md-6">
             <div class="card card-debit" style="background: linear-gradient(135deg, <?php echo htmlspecialchars($cartaoDebito['cor_cartao']); ?>, #f78db4);">
               <h5 class="mb-1"><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
-              <p class="mb-0">Banco: <strong><?php echo htmlspecialchars($cartaoDebito['banco']); ?></strong></p>
+              <p class="mb-0">
+                Banco: <strong><?php echo htmlspecialchars($cartaoDebito['banco']); ?></strong>
+                <img class='bancoImage @<?php echo htmlspecialchars($cartaoDebito['banco']); ?>'></img>
+              </p>
               <p class="mt-2">Saldo disponível: <strong>R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
               <form method="POST" action="cardDetails.php">
                 <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoDebito['id']); ?>@debito">
@@ -137,7 +143,10 @@
         if (isset($_SESSION['cartoes']['debito']) && count($_SESSION['cartoes']['debito']) > 0) {
           foreach ($_SESSION['cartoes']['debito'] as $cartaoDebito): ?>
             <div class="card-body">
-              <h5><?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?></h5>
+              <h5>
+                <?php echo htmlspecialchars($cartaoDebito['nome_cartao']); ?>
+                <img class='bancoImage @<?php echo htmlspecialchars($cartaoDebito['banco']); ?>'></img>
+              </h5>
               <p>Saldo: <strong class="text-success">R$ <?php echo number_format($cartaoDebito['saldo_disponivel'], 2, ',', '.'); ?></strong></p>
               <form action="newTransaction.php" method="post">
                 <input type="hidden" name="id_cartao" value="<?php echo htmlspecialchars($cartaoDebito['id']); ?>">
@@ -185,5 +194,6 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="scripts/bancoImages.js"></script>
 </body>
 </html>

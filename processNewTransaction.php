@@ -29,6 +29,23 @@
         $stmtUpdate->bindParam(':id_user', $_SESSION['usuario_id']);
         $stmtUpdate->execute();
         
+        $queryVerifyMetas = "SELECT * FROM tb_metas WHERE id_user = :id_user";
+        $stmtVerify = $conn->prepare($queryVerifyMetas);
+        $stmtVerify->bindParam(':id_user', $_SESSION['usuario_id']);
+        $stmtVerify->execute();
+        $metas = $stmtVerify->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($metas as $meta) {
+            if ($_POST['destino'] == $meta['nome_meta']) {
+                $queryUpdateMeta = "UPDATE tb_metas SET valor_atual = valor_atual + :valor WHERE id_meta = :id_meta AND id_user = :id_user";
+                $stmtUpdateMeta = $conn->prepare($queryUpdateMeta);
+                $stmtUpdateMeta->bindParam(':valor', $_POST['valor']);
+                $stmtUpdateMeta->bindParam(':id_meta', $meta['id_meta']);
+                $stmtUpdateMeta->bindParam(':id_user', $_SESSION['usuario_id']);
+                $stmtUpdateMeta->execute();
+            }
+        }
+
         header("Location: home.php");
         exit();
     } catch (PDOException $e) {

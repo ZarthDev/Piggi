@@ -73,6 +73,7 @@
 
       <div class="d-grid gap-2">
         <button type="submit" class="btn btn-rosa">Salvar Meta</button>
+        <a href="home.php" class="btn btn-rosa">Voltar</a>
       </div>
     </form>
   </div>
